@@ -1,100 +1,75 @@
-# SplitEase
+<h1 align="center">SplitEase</h1>
 
-A mobile-friendly expense splitting app built with Flutter + Node.js + Supabase.
+<p align="center"><b>Split group expenses without the awkward maths.</b></p>
 
----
+<p align="center">
+A mobile-first app for trips, housemates and team dinners: add an expense,<br>
+split it equally or by custom amounts, and see who owes whom at a glance.
+</p>
 
-## Prerequisites
+<p align="center">
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#run-it-locally">Run locally</a> ·
+  <a href="docs/SETUP.md">Full setup</a> ·
+  <a href="docs/DEPLOY.md">Deploy</a>
+</p>
 
-- [Node.js 20+](https://nodejs.org)
-- [Flutter 3+](https://flutter.dev/docs/get-started/install)
-- A [Supabase](https://supabase.com) project
-- A [Brevo](https://brevo.com) account (for email verification)
+<!-- Screenshots: add a row of 3–4 phone screens here (docs/assets/screens.png). -->
 
----
+## Features
 
-## 1. Database Setup
+- **Groups:** create a group with a description, then add members by searching for real users.
+- **Flexible splits:** split an expense equally, or set a custom amount for each person.
+- **Balances and settle-up:** every group shows who owes whom, and a settlement clears the debt.
+- **Friends:** send, accept or reject friend requests before adding people to groups.
+- **Activity feed:** a running history of expenses and settlements across your groups.
+- **Verified sign-up:** new accounts confirm their email, and sessions persist between launches.
 
-1. Open your Supabase project → **SQL Editor**
-2. Run `backend/src/db/migrations/001_initial_schema.sql`
-3. Run `backend/src/db/migrations/002_split_amounts.sql`
+## How it works
 
----
+```mermaid
+flowchart LR
+  A["Flutter app<br/>Android · iOS · web"] -->|REST /api| B["Node.js + Express"]
+  B --> C[("Supabase<br/>PostgreSQL")]
+  B -.->|verification email| D["Brevo"]
+```
 
-## 2. Backend Setup
+The Flutter app talks only to the Express API. The API owns the business rules (splits, balances, settlements) and stores everything in Supabase Postgres. Splits are stored per person, so equal and custom splits use the same balance logic.
+
+## Run it locally
+
+You need Node 20+, Flutter 3+ and a [Supabase](https://supabase.com) project. Run the two SQL files in `backend/src/db/migrations/` in the Supabase SQL editor, then:
 
 ```bash
-cd backend
-cp .env.example .env
-npm install
-npm run dev
+# 1 · API on :5001
+cd backend && cp .env.example .env    # add SUPABASE_URL, SUPABASE_SECRET_KEY, JWT_SECRET
+npm install && npm run dev
+
+# 2 · App
+cd frontend && flutter pub get && flutter run
 ```
 
-Fill in `backend/.env`:
+Email sending is optional: without `BREVO_API_KEY`, the verification link is printed in the API console. Every variable is explained in [docs/SETUP.md](docs/SETUP.md).
 
-```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SECRET_KEY=your-service-role-key
-JWT_SECRET=any-random-secret-string
-BREVO_API_KEY=your-brevo-api-key
-APP_BASE_URL=http://localhost:5001
-PORT=5001
-```
+## Tech stack
 
-- `SUPABASE_URL` and `SUPABASE_SECRET_KEY` → Supabase dashboard → Project Settings → API
-- `BREVO_API_KEY` → Brevo dashboard → SMTP & API → API Keys
-- `APP_BASE_URL` → the public URL of your backend (use `http://localhost:5001` for local dev)
+| Layer | Tech |
+|---|---|
+| App | Flutter, Provider, shared_preferences |
+| API | Node.js, Express |
+| Data | Supabase (PostgreSQL), SQL migrations |
+| Email | Brevo (optional) |
+| CI / deploy | GitHub Actions (API checks and tests, `flutter analyze` and `flutter test`), Docker on Render |
 
-The API will be running at `http://localhost:5001`.
+<details>
+<summary><b>API at a glance</b></summary>
+<br>
 
----
-
-## 3. Frontend Setup
-
-```bash
-cd frontend
-flutter pub get
-flutter run
-```
-
-To point the app at a specific backend URL:
-
-```bash
-flutter run --dart-define=API_BASE_URL=http://localhost:5001/api
-```
-
-For web:
-
-```bash
-flutter build web
-# Output is in frontend/build/web/
-```
-
----
-
-## 4. Cloud Deployment
-
-### Backend → Render
-
-1. Push your repo to GitHub
-2. Go to [render.com](https://render.com) → New → Web Service
-3. Connect your repo, set **Root Directory** to `backend`, **Environment** to `Docker`
-4. Add all environment variables from `.env` (use your Render URL for `APP_BASE_URL`)
-
-### Frontend → Netlify
-
-1. Update `API_BASE_URL` in the Flutter app to your Render backend URL
-2. Run `flutter build web`
-3. Drag the `frontend/build/web/` folder to [netlify.com](https://netlify.com)
-
----
-
-## 5. Running Tests
-
-```bash
-# Backend
-npm --prefix backend test
-
-# Frontend
-cd frontend && flutter test
-```
+| Area | Endpoints |
+|---|---|
+| Auth | `POST /api/auth/register` · `POST /api/auth/login` · `GET /api/auth/verify` · `POST /api/auth/resend-verification` |
+| Groups | `GET/POST /api/groups` · `GET/PUT/PATCH/DELETE /api/groups/:id` · `POST /api/groups/:id/members` |
+| Expenses | `GET/POST /api/groups/:groupId/expenses` · `PUT/PATCH/DELETE /api/groups/:groupId/expenses/:expenseId` |
+| Balances | `GET /api/groups/:groupId/balances` · `POST /api/groups/:groupId/settlements` |
+| Friends | `GET /api/friends` · `POST /api/friends/request` · `POST /api/friends/requests/:userId/accept` (or `reject`) |
+</details>

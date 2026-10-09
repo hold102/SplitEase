@@ -18,6 +18,7 @@ Everything you need to run SplitEase locally. For hosting, see [DEPLOY.md](DEPLO
 1. Open your Supabase project → **SQL Editor**
 2. Run `backend/src/db/migrations/001_initial_schema.sql`
 3. Run `backend/src/db/migrations/002_split_amounts.sql`
+4. Run `backend/src/db/migrations/003_friends_settlements_verification.sql` (friends, settle-ups, email verification, row-level security)
 
 ---
 
@@ -35,8 +36,7 @@ Fill in `backend/.env`:
 ```env
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SECRET_KEY=your-service-role-key
-JWT_SECRET=any-random-secret-string
-BREVO_API_KEY=your-brevo-api-key
+BREVO_API_KEY=your-brevo-api-key   # optional
 APP_BASE_URL=http://localhost:5001
 PORT=5001
 ```
@@ -46,6 +46,12 @@ PORT=5001
 - `APP_BASE_URL` → the public URL of your backend (use `http://localhost:5001` for local dev)
 
 The API will be running at `http://localhost:5001`.
+
+---
+
+## Demo data
+
+`npm --prefix backend run seed:demo` loads 5 demo people, two groups (a Penang trip and a shared house), equal and exact splits, a settle-up and friend requests. Sign in with `demo@splitease.app` / `splitease-demo`. It only runs on an empty database; `-- --force` replaces existing data.
 
 ---
 

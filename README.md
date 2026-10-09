@@ -14,13 +14,15 @@ split it equally or by custom amounts, and see who owes whom at a glance.
   <a href="docs/DEPLOY.md">Deploy</a>
 </p>
 
-<!-- Screenshots: add a row of 3–4 phone screens here (docs/assets/screens.png). -->
+<p align="center">
+  <img src="docs/assets/screens.png" width="860" alt="Four SplitEase screens: home with what you're owed and owe, a Penang Trip group's expenses, the simplified settle-up plan, and an expense split by exact amounts">
+</p>
 
 ## Features
 
 - **Groups:** create a group with a description, then add members by searching for real users.
 - **Flexible splits:** split an expense equally, or set a custom amount for each person.
-- **Balances and settle-up:** every group shows who owes whom, and a settlement clears the debt.
+- **Simplified settle-up:** each group turns its debts into the fewest payments, and recording a settle-up clears them.
 - **Friends:** send, accept or reject friend requests before adding people to groups.
 - **Activity feed:** a running history of expenses and settlements across your groups.
 - **Verified sign-up:** new accounts confirm their email, and sessions persist between launches.
@@ -38,18 +40,18 @@ The Flutter app talks only to the Express API. The API owns the business rules (
 
 ## Run it locally
 
-You need Node 20+, Flutter 3+ and a [Supabase](https://supabase.com) project. Run the two SQL files in `backend/src/db/migrations/` in the Supabase SQL editor, then:
+You need Node 20+, Flutter 3+ and a [Supabase](https://supabase.com) project. Run the three SQL files in `backend/src/db/migrations/` (in order) in the Supabase SQL editor, then:
 
 ```bash
 # 1 · API on :5001
-cd backend && cp .env.example .env    # add SUPABASE_URL, SUPABASE_SECRET_KEY, JWT_SECRET
-npm install && npm run dev
+cd backend && cp .env.example .env    # add SUPABASE_URL and SUPABASE_SECRET_KEY
+npm install && npm run seed:demo && npm run dev
 
 # 2 · App
 cd frontend && flutter pub get && flutter run
 ```
 
-Email sending is optional: without `BREVO_API_KEY`, the verification link is printed in the API console. Every variable is explained in [docs/SETUP.md](docs/SETUP.md).
+Sign in with the demo account `demo@splitease.app` / `splitease-demo`. Email sending is optional: without `BREVO_API_KEY`, the verification link is printed in the API console. Every variable is explained in [docs/SETUP.md](docs/SETUP.md).
 
 ## Tech stack
 
